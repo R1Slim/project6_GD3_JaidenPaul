@@ -19,22 +19,28 @@ public class TimeLoop : MonoBehaviour
     public SpriteRenderer sr;
     public int count = 0;
     public int rnd = 1;
-    public bool isLive; 
-    
+    public bool isLive;
+
+    public int TargetOrder = 0;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         isLive = target.activeSelf;
         
         spawnTargets();
-        target.SetActive(false);
+        
         Debug.Log("um start works");
+        
     }
 
     // Update is called once per frame
     void Update()
     {
-      
+        if(rnd > Live.Count)
+        {
+            isLive = true;
+            StartCoroutine(makeLive());
+        }
     }
     public void spawnTargets()
     { for (int i = 0; i < 29; i++)
@@ -49,42 +55,33 @@ public class TimeLoop : MonoBehaviour
             count++;
             //target.SetActive(false);
             Debug.Log("spawned");
-            StartCoroutine(slowSpawn());
-            addtoDisabled (GO);
+            //StartCoroutine(slowSpawn());
+            AddtoDisabled (GO);
         }
 
     }
-    public void addtoDisabled(GameObject t)
+    public void AddtoDisabled(GameObject t)
     {
         Disabled.Add(t);
-        
-        makeLive();
+        target.SetActive(false);
     }
-    public void makeLive()
+    public IEnumerator makeLive()
     {
-        if (rnd > Live.Count)
+        Live.Add(Disabled[0]);
+        Disabled.RemoveAt(0);
+
+        foreach (GameObject t in Live)
         {
-            int Disabledlist = Disabled.Count;
-            foreach (GameObject t in Disabled)
-            {
-                if (Disabled.Count == Disabledlist)
-                {
-                    Live.Add(Disabled[0]);
-                }
-            }
-
-            Disabled.RemoveAt(0);
-
-
-            foreach (GameObject t in Live)
-            {
-                target.SetActive(true);
-            }
-        }       
+            Debug.Log(Live.Count);
+            yield return new WaitForSeconds(2f);
+            t.SetActive(true);
+        }
+        isLive = false;
     }
-    public IEnumerator slowSpawn()
+    private void OnMouseDown(Collider2D Target)
     {
-        yield return new WaitForSeconds(0.5f);
+        Live[TargetOrder].GetComponent<SpriteRenderer>().color = Color.green;
+        TargetOrder++;
     }
 }
 
@@ -100,3 +97,4 @@ public class TimeLoop : MonoBehaviour
 ///End of logic
 ///List Application:
 ///Have a list With 30 instantiated objects all turned off, make sure they dont overlap
+///when the user clicks an item that was lit up than it meets my condition 
